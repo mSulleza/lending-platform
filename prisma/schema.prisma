@@ -1,0 +1,83 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Client {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  firstName   String
+  lastName    String
+  email       String   @unique
+  phone       String?
+  address     String?
+  city        String?
+  state       String?
+  zipCode     String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  loanSchedules LoanSchedule[]
+}
+
+model LoanSchedule {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  clientId        String   @db.ObjectId
+  client          Client   @relation(fields: [clientId], references: [id])
+  loanAmount      Float
+  serviceCharge   Float    @default(0) // Service charge applied when loan is released
+  monthlyInterest Float
+  loanTerms       Int      // Number of months
+  paymentScheme   String   // Weekly, Bi-weekly, Monthly, etc.
+  startDate       DateTime
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  hasContract     Boolean  @default(false)
+  status          String   @default("active") // active, defaulted, restructured, completed
+  closedDate      DateTime?
+  closingNotes    String?
+  payments        Payment[]
+  
+  // Self-relation for restructured loans
+  restructureHistory LoanRestructure[] // Records when this loan was restructured
+  
+  // Original loan (if this is a restructured loan)
+  originalLoanId  String?  @db.ObjectId
+  originalLoan    LoanSchedule? @relation("OriginalLoan", fields: [originalLoanId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  
+  // Restructured loans (if this is an original loan that was restructured)
+  restructuredLoans LoanSchedule[] @relation("OriginalLoan")
+}
+
+model LoanRestructure {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  originalLoanId  String    @db.ObjectId
+  originalLoan    LoanSchedule @relation(fields: [originalLoanId], references: [id])
+  newLoanId       String?   @db.ObjectId
+  restructureDate DateTime  @default(now())
+  reason          String
+  remainingBalance Float
+  createdAt       DateTime  @default(now())
+}
+
+model Payment {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  loanScheduleId  String    @db.ObjectId
+  loanSchedule    LoanSchedule @relation(fields: [loanScheduleId], references: [id])
+  dueDate         DateTime
+  amount          Float
+  isPaid          Boolean   @default(false)
+  paymentDate     DateTime?
+  chequeNumber    String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
