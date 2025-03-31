@@ -14,6 +14,14 @@ declare module "next-auth/jwt" {
     }
 }
 
+if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+    console.error("Missing Google OAuth credentials. Please check your environment variables.");
+}
+
+if (!process.env.NEXTAUTH_SECRET) {
+    console.warn("Missing NEXTAUTH_SECRET. Using a default secret is not recommended for production.");
+}
+
 export const authOptions: AuthOptions = {
     providers: [
         GoogleProvider({
