@@ -14,12 +14,11 @@ import clsx from "clsx";
 import NextLink from "next/link";
 
 import { Logo } from "@/components/icons";
-import { ThemeSwitch } from "@/components/theme-switch";
 import { siteConfig } from "@/config/site";
 import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import CurrencySettings from "./CurrencySettings";
-import { Logout } from "./logout";
+import { Logout } from "./Logout";
 
 export const Navbar = () => {
   const { data: session } = useSession();
@@ -71,13 +70,11 @@ export const Navbar = () => {
           <NavbarItem className="hidden sm:flex gap-3">
             <CurrencySettings />
             <Logout />
-            <ThemeSwitch />
           </NavbarItem>
         </NavbarContent>
 
         <NavbarContent className="sm:hidden basis-1 pl-4" justify="end">
           <CurrencySettings />
-          <ThemeSwitch />
           <NavbarMenuToggle />
         </NavbarContent>
 

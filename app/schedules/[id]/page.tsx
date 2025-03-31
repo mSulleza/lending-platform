@@ -56,6 +56,7 @@ export default function ScheduleDetailPage() {
   const [remainingBalance, setRemainingBalance] = useState(0);
   const [isCloseLoanModalOpen, setIsCloseLoanModalOpen] = useState(false);
   const [allPaymentsMade, setAllPaymentsMade] = useState(false);
+  const [selectedModalTab, setSelectedModalTab] = useState("default");
 
   useEffect(() => {
     const fetchSchedule = async () => {
@@ -173,6 +174,16 @@ export default function ScheduleDetailPage() {
     }
   };
 
+  const openLoanModal = (tab: string = "default") => {
+    setSelectedModalTab(tab);
+    setIsCloseLoanModalOpen(true);
+  };
+
+  const closeLoanModal = () => {
+    setSelectedModalTab("default");
+    setIsCloseLoanModalOpen(false);
+  };
+
   if (isLoading) {
     return (
       <div className="container mx-auto py-8 px-4 max-w-6xl">
@@ -225,7 +236,7 @@ export default function ScheduleDetailPage() {
               {allPaymentsMade ? (
                 <Button
                   color="success"
-                  onPress={() => setIsCloseLoanModalOpen(true)}
+                  onPress={() => openLoanModal("complete")}
                   className="font-medium"
                   startContent={
                     <svg
@@ -251,7 +262,7 @@ export default function ScheduleDetailPage() {
                 <Button
                   color="danger"
                   variant="flat"
-                  onPress={() => setIsCloseLoanModalOpen(true)}
+                  onPress={() => openLoanModal()}
                   className="font-medium"
                 >
                   Close Loan
@@ -308,7 +319,7 @@ export default function ScheduleDetailPage() {
               <Button
                 color="success"
                 className="ml-auto"
-                onPress={() => setIsCloseLoanModalOpen(true)}
+                onPress={() => openLoanModal("complete")}
                 size="sm"
               >
                 Mark as Completed
@@ -476,12 +487,12 @@ export default function ScheduleDetailPage() {
       {isCloseLoanModalOpen && (
         <CloseLoanModal
           isOpen={isCloseLoanModalOpen}
-          onClose={() => setIsCloseLoanModalOpen(false)}
+          onClose={closeLoanModal}
           loanId={id}
           loanAmount={schedule.loanAmount}
           remainingBalance={remainingBalance}
           onSuccess={refreshData}
-          defaultTab={allPaymentsMade ? "completed" : "default"}
+          defaultTab={selectedModalTab}
         />
       )}
     </div>

@@ -12,7 +12,7 @@ import {
 } from "@nextui-org/modal";
 import { Spinner, Tab, Tabs } from "@nextui-org/react";
 import { Select, SelectItem } from "@nextui-org/select";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface CloseLoanModalProps {
   isOpen: boolean;
@@ -49,6 +49,10 @@ export default function CloseLoanModal({
   const [allPaymentsMade, setAllPaymentsMade] = useState(false);
   const [checkingPayments, setCheckingPayments] = useState(false);
 
+  // Use refs to track payment check status
+  const hasCheckedPayments = useRef(false);
+  const unpaidPaymentCount = useRef(0);
+
   const paymentSchemes = [
     { label: "Weekly", value: "weekly" },
     { label: "Bi-weekly", value: "bi-weekly" },
@@ -56,6 +60,24 @@ export default function CloseLoanModal({
     { label: "Quarterly", value: "quarterly" },
   ];
 
+  // Update the selected tab when the defaultTab prop changes
+  useEffect(() => {
+    // When the modal opens or the defaultTab changes, update the selected tab
+    setSelectedTab(defaultTab);
+  }, [defaultTab, isOpen]);
+
+  // Reset error and state when the modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setError("");
+      // Only reset allPaymentsMade if we're not on the complete tab
+      if (selectedTab !== "complete") {
+        setAllPaymentsMade(false);
+      }
+    }
+  }, [isOpen, selectedTab]);
+
+  // Reset refs when the modal is closed
   const handleClose = () => {
     setSelectedTab("default");
     setNotes("");
@@ -65,6 +87,9 @@ export default function CloseLoanModal({
     setStartDate(new Date().toISOString().split("T")[0]);
     setError("");
     setAllPaymentsMade(false);
+    setCheckingPayments(false);
+    hasCheckedPayments.current = false;
+    unpaidPaymentCount.current = 0;
     onClose();
   };
 
@@ -187,53 +212,63 @@ export default function CloseLoanModal({
     }
   };
 
-  // Check if all payments are made when switching to the complete tab
-  useEffect(() => {
-    if (selectedTab === "completed" && !allPaymentsMade && !checkingPayments) {
-      const verifyPayments = async () => {
-        setCheckingPayments(true);
-        setError("");
+  // Check payment status when the complete tab is selected
+  const checkPaymentStatus = useCallback(async () => {
+    if (checkingPayments) return;
 
-        try {
-          const response = await fetch(`/api/schedules/${loanId}/payments`);
-          if (!response.ok) {
-            throw new Error("Failed to fetch payment status");
-          }
-
-          const payments = await response.json();
-          const unpaidPayments = payments.filter(
-            (payment: any) => !payment.isPaid
-          );
-
-          if (unpaidPayments.length > 0) {
-            setError(
-              `There are still ${unpaidPayments.length} unpaid payments. All payments must be made before completing the loan.`
-            );
-            setAllPaymentsMade(false);
-          } else if (payments.length === 0) {
-            setError("No payments found for this loan.");
-            setAllPaymentsMade(false);
-          } else {
-            setAllPaymentsMade(true);
-          }
-        } catch (err) {
-          setError(
-            (err as Error).message || "An error checking payment status"
-          );
-          setAllPaymentsMade(false);
-        } finally {
-          setCheckingPayments(false);
-        }
-      };
-
-      verifyPayments();
+    // If we've already checked and found unpaid payments, don't check again
+    if (hasCheckedPayments.current && unpaidPaymentCount.current > 0) {
+      return;
     }
-  }, [selectedTab, loanId, allPaymentsMade, checkingPayments]);
+
+    setCheckingPayments(true);
+
+    try {
+      const response = await fetch(`/api/schedules/${loanId}/payments`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch payment status");
+      }
+
+      const payments = await response.json();
+      const unpaidPayments = payments.filter((payment: any) => !payment.isPaid);
+
+      // Store the count of unpaid payments
+      unpaidPaymentCount.current = unpaidPayments.length;
+      hasCheckedPayments.current = true;
+
+      if (unpaidPayments.length > 0) {
+        setError(
+          `There are still ${unpaidPayments.length} unpaid payments. All payments must be made before completing the loan.`
+        );
+        setAllPaymentsMade(false);
+      } else if (payments.length === 0) {
+        setError("No payments found for this loan.");
+        setAllPaymentsMade(false);
+      } else {
+        setAllPaymentsMade(true);
+        setError("");
+      }
+    } catch (err) {
+      console.error("Error checking payment status:", err);
+      setError((err as Error).message || "Error checking payment status");
+      setAllPaymentsMade(false);
+    } finally {
+      setCheckingPayments(false);
+    }
+  }, [loanId, checkingPayments]);
+
+  // Run payment check when tab changes to "complete"
+  useEffect(() => {
+    // Only check when the tab is "complete", we're not already checking, and modal is open
+    if (selectedTab === "complete" && !checkingPayments && isOpen) {
+      checkPaymentStatus();
+    }
+  }, [selectedTab, checkPaymentStatus, checkingPayments, isOpen]);
 
   const handleSubmit = () => {
     if (selectedTab === "default") {
       handleLoanDefault();
-    } else if (selectedTab === "completed") {
+    } else if (selectedTab === "complete") {
       handleLoanComplete();
     } else if (selectedTab === "restructure") {
       handleLoanRestructure();
@@ -245,8 +280,9 @@ export default function CloseLoanModal({
       isOpen={isOpen}
       onClose={handleClose}
       size="xl"
-      isDismissable={true}
-      closeButton={true}
+      classNames={{
+        closeButton: "right-2 top-2",
+      }}
     >
       <ModalContent>
         {() => (
@@ -263,7 +299,20 @@ export default function CloseLoanModal({
 
               <Tabs
                 selectedKey={selectedTab}
-                onSelectionChange={(key: any) => setSelectedTab(key)}
+                onSelectionChange={(key: any) => {
+                  // If moving away from complete tab, reset payment check status
+                  if (selectedTab === "complete" && key !== "complete") {
+                    hasCheckedPayments.current = false;
+                    unpaidPaymentCount.current = 0;
+                  }
+
+                  setSelectedTab(key);
+                  // Only clear error when not switching to complete tab
+                  // because we want to keep the payment verification error
+                  if (key !== "complete") {
+                    setError("");
+                  }
+                }}
                 variant="bordered"
                 aria-label="Loan closing options"
                 classNames={{
@@ -293,7 +342,7 @@ export default function CloseLoanModal({
                     />
                   </div>
                 </Tab>
-                <Tab key="completed" title="Mark as Completed">
+                <Tab key="complete" title="Mark as Completed">
                   <div className="mt-4 space-y-4">
                     <div className="p-3 bg-success-50 dark:bg-success-400/10 rounded-medium">
                       <p className="text-success-600 dark:text-success-400 font-medium">
@@ -315,6 +364,24 @@ export default function CloseLoanModal({
                         ) : allPaymentsMade ? (
                           <span className="text-success-600 font-medium mt-2 block">
                             ✓ All payments have been made
+                          </span>
+                        ) : unpaidPaymentCount.current > 0 ? (
+                          <span className="flex items-center mt-2 justify-between">
+                            <span className="text-danger-600 font-medium">
+                              {unpaidPaymentCount.current} unpaid payment(s)
+                            </span>
+                            <Button
+                              size="sm"
+                              variant="flat"
+                              color="primary"
+                              onPress={() => {
+                                hasCheckedPayments.current = false;
+                                unpaidPaymentCount.current = 0;
+                                checkPaymentStatus();
+                              }}
+                            >
+                              Refresh
+                            </Button>
                           </span>
                         ) : null}
                       </p>
@@ -415,17 +482,17 @@ export default function CloseLoanModal({
                 color={
                   selectedTab === "default"
                     ? "warning"
-                    : selectedTab === "completed"
+                    : selectedTab === "complete"
                       ? "success"
                       : "primary"
                 }
                 onPress={handleSubmit}
                 isLoading={isLoading}
-                isDisabled={selectedTab === "completed" && !allPaymentsMade}
+                isDisabled={selectedTab === "complete" && !allPaymentsMade}
               >
                 {selectedTab === "default"
                   ? "Mark as Defaulted"
-                  : selectedTab === "completed"
+                  : selectedTab === "complete"
                     ? "Mark as Completed"
                     : "Restructure Loan"}
               </Button>

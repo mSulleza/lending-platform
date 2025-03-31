@@ -1,12 +1,19 @@
-"use client"
+"use client";
 
-import { Button } from "@nextui-org/button"
-import { signOut } from "next-auth/react"
-import { useTheme } from "next-themes"
-import { LogoutIcon } from "./icons/logout"
+import { LogoutIcon } from "@/components/icons";
+import { Button } from "@nextui-org/button";
+import { signOut } from "next-auth/react";
+
 export const Logout = () => {
-    const { theme } = useTheme();
-    return (
-        <Button onClick={() => signOut()} startContent={<LogoutIcon />} variant={theme === "dark" ? "solid" : "light"} />
-    )
-}
+  return (
+    <Button
+      onClick={() => signOut()}
+      startContent={<LogoutIcon />}
+      color="danger"
+      variant="flat"
+      className="font-medium transition-transform hover:scale-105"
+    >
+      Logout
+    </Button>
+  );
+};

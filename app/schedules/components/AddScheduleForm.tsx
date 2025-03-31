@@ -46,6 +46,18 @@ export default function AddScheduleForm({ onSuccess }: AddScheduleFormProps) {
   useEffect(() => {
     const config = getCurrencyConfig();
     setCurrencySymbol(config.symbol);
+
+    // Listen for currency changes
+    const handleCurrencyChange = () => {
+      const updatedConfig = getCurrencyConfig();
+      setCurrencySymbol(updatedConfig.symbol);
+    };
+
+    window.addEventListener("currency-changed", handleCurrencyChange);
+
+    return () => {
+      window.removeEventListener("currency-changed", handleCurrencyChange);
+    };
   }, []);
 
   // Fetch clients for dropdown
@@ -234,16 +246,11 @@ export default function AddScheduleForm({ onSuccess }: AddScheduleFormProps) {
           label="Loan Amount"
           name="loanAmount"
           type="number"
-          step="0.01"
-          min="0"
           value={formData.loanAmount}
           onChange={handleChange}
-          required
-          variant="bordered"
-          color={errors.loanAmount ? "danger" : "default"}
+          isInvalid={!!errors.loanAmount}
           errorMessage={errors.loanAmount}
-          placeholder="5000.00"
-          labelPlacement="outside"
+          placeholder="Enter loan amount"
           startContent={
             <div className="pointer-events-none flex items-center">
               <span className="text-default-400 text-small">
@@ -251,21 +258,19 @@ export default function AddScheduleForm({ onSuccess }: AddScheduleFormProps) {
               </span>
             </div>
           }
+          min="0"
+          required
         />
 
         <Input
-          label="Service Charge"
+          label="Service Charge (Optional)"
           name="serviceCharge"
           type="number"
-          step="0.01"
-          min="0"
           value={formData.serviceCharge}
           onChange={handleChange}
-          variant="bordered"
-          color={errors.serviceCharge ? "danger" : "default"}
+          isInvalid={!!errors.serviceCharge}
           errorMessage={errors.serviceCharge}
-          placeholder="100.00"
-          labelPlacement="outside"
+          placeholder="Enter service charge amount"
           startContent={
             <div className="pointer-events-none flex items-center">
               <span className="text-default-400 text-small">
@@ -273,6 +278,7 @@ export default function AddScheduleForm({ onSuccess }: AddScheduleFormProps) {
               </span>
             </div>
           }
+          min="0"
         />
 
         <Input

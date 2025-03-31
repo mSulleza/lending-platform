@@ -17,6 +17,10 @@ export const siteConfig = {
       href: "/schedules",
     },
     {
+      label: "Loan Adviser",
+      href: "/loan-adviser",
+    },
+    {
       label: "Settings",
       href: "/settings",
     },
@@ -37,6 +41,10 @@ export const siteConfig = {
     {
       label: "Schedules",
       href: "/schedules",
+    },
+    {
+      label: "Loan Adviser",
+      href: "/loan-adviser",
     },
     {
       label: "Settings",
