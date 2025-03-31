@@ -17,13 +17,14 @@ export function formatCurrency(amount: number): string {
 /**
  * Format a date in a user-friendly format
  */
-export function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat('en-US', {
+export const formatDate = (dateString: string | Date): string => {
+  const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+  return date.toLocaleDateString('en-US', {
     year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  }).format(date);
-}
+    month: 'long',
+    day: 'numeric'
+  });
+};
 
 /**
  * Format a date with time

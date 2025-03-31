@@ -8,12 +8,12 @@ import { Input, Select, SelectItem, Switch } from "@nextui-org/react";
 import { Slider } from "@nextui-org/slider";
 import { Spinner } from "@nextui-org/spinner";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableColumn,
-  TableHeader,
-  TableRow,
+    Table,
+    TableBody,
+    TableCell,
+    TableColumn,
+    TableHeader,
+    TableRow,
 } from "@nextui-org/table";
 import { Tooltip } from "@nextui-org/tooltip";
 import { useEffect, useRef, useState } from "react";
@@ -220,8 +220,8 @@ export default function LoanAdviser() {
   if (!initialized && loading) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
-        <Spinner size="lg" />
-        <p className="mt-4 text-default-500">Loading Loan Adviser...</p>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <p className="mt-4 text-gray-500 dark:text-gray-400">Loading Loan Adviser...</p>
       </div>
     );
   }

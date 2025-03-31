@@ -1,8 +1,6 @@
 "use client";
 
 import { formatCurrency, formatDate } from "@/app/utils/formatters";
-import { Card, CardBody, CardHeader } from "@nextui-org/card";
-import { Spinner } from "@nextui-org/spinner";
 import { useCallback, useEffect, useState } from "react";
 
 interface DashboardStats {
@@ -77,14 +75,15 @@ export default function Dashboard() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-60">
-        <Spinner size="lg" label="Loading dashboard statistics..." />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <span className="ml-2 text-primary">Loading dashboard statistics...</span>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center p-6 text-danger">
+      <div className="text-center p-6 text-red-600">
         <h3 className="text-xl mb-2">Error Loading Dashboard</h3>
         <p>{error}</p>
       </div>
@@ -105,127 +104,118 @@ export default function Dashboard() {
 
       {/* Summary Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-primary-50 dark:bg-primary-900/20">
-          <CardBody className="py-5">
-            <h2 className="text-sm font-medium text-default-500">
-              Total Clients
-            </h2>
-            <p className="text-3xl font-semibold mt-1">{stats.totalClients}</p>
-          </CardBody>
-        </Card>
+        <div className="bg-primary-50 dark:bg-primary-900/20 rounded-lg p-5">
+          <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            Total Clients
+          </h2>
+          <p className="text-3xl font-semibold mt-1">{stats.totalClients}</p>
+        </div>
 
-        <Card className="bg-success-50 dark:bg-success-900/20">
-          <CardBody className="py-5">
-            <h2 className="text-sm font-medium text-default-500">
-              Total Loans
-            </h2>
-            <p className="text-3xl font-semibold mt-1">{stats.totalLoans}</p>
-            <p className="text-sm text-default-500 mt-1">
-              {formatCurrency(stats.totalLoanAmount)}
-            </p>
-          </CardBody>
-        </Card>
+        <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-5">
+          <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            Total Loans
+          </h2>
+          <p className="text-3xl font-semibold mt-1">{stats.totalLoans}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            {formatCurrency(stats.totalLoanAmount)}
+          </p>
+        </div>
 
-        <Card className="bg-warning-50 dark:bg-warning-900/20">
-          <CardBody className="py-5">
-            <h2 className="text-sm font-medium text-default-500">
-              Active Loans
-            </h2>
-            <p className="text-3xl font-semibold mt-1">{stats.activeLoans}</p>
-            <p className="text-sm text-default-500 mt-1">
-              {((stats.activeLoans / stats.totalLoans) * 100).toFixed(1)}% of
-              total
-            </p>
-          </CardBody>
-        </Card>
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-5">
+          <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            Active Loans
+          </h2>
+          <p className="text-3xl font-semibold mt-1">{stats.activeLoans}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            {((stats.activeLoans / stats.totalLoans) * 100).toFixed(1)}% of total
+          </p>
+        </div>
 
-        <Card className="bg-secondary-50 dark:bg-secondary-900/20">
-          <CardBody className="py-5">
-            <h2 className="text-sm font-medium text-default-500">
-              Total Payments Received
-            </h2>
-            <p className="text-3xl font-semibold mt-1">
-              {stats.totalPaidPayments}
-            </p>
-            <p className="text-sm text-default-500 mt-1">
-              {formatCurrency(stats.totalPaidAmount)}
-            </p>
-          </CardBody>
-        </Card>
+        <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-5">
+          <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            Total Payments Received
+          </h2>
+          <p className="text-3xl font-semibold mt-1">
+            {stats.totalPaidPayments}
+          </p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            {formatCurrency(stats.totalPaidAmount)}
+          </p>
+        </div>
       </div>
 
       {/* Earnings and Projections */}
-      <Card className="mt-6">
-        <CardHeader className="border-b border-divider pb-2">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm mt-6">
+        <div className="border-b border-gray-200 dark:border-gray-700 p-4">
           <h2 className="text-lg font-medium">Earnings & Projections</h2>
-        </CardHeader>
-        <CardBody>
+        </div>
+        <div className="p-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-4 bg-success-50 dark:bg-success-900/20 rounded-lg">
-              <h3 className="text-sm font-medium text-default-500">
+            <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
                 Total Service Charges
               </h3>
               <p className="text-2xl font-semibold mt-1">
                 {formatCurrency(stats.totalServiceCharges)}
               </p>
-              <p className="text-xs text-default-500 mt-1">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 Upfront fees from all loans
               </p>
             </div>
 
             <div className="p-4 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
-              <h3 className="text-sm font-medium text-default-500">
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
                 Payments Received
               </h3>
               <p className="text-2xl font-semibold mt-1">
                 {formatCurrency(stats.totalPaidAmount)}
               </p>
-              <p className="text-xs text-default-500 mt-1">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 Total payments collected to date
               </p>
             </div>
 
-            <div className="p-4 bg-warning-50 dark:bg-warning-900/20 rounded-lg">
-              <h3 className="text-sm font-medium text-default-500">
+            <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
                 Projected Interest Earnings
               </h3>
               <p className="text-2xl font-semibold mt-1">
                 {formatCurrency(stats.projectedInterestEarnings)}
               </p>
-              <p className="text-xs text-default-500 mt-1">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 Expected interest earnings from all loans
               </p>
             </div>
 
-            <div className="p-4 bg-secondary-50 dark:bg-secondary-900/20 rounded-lg">
-              <h3 className="text-sm font-medium text-default-500">
+            <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
                 Total Projected Earnings
               </h3>
               <p className="text-2xl font-semibold mt-1">
                 {formatCurrency(stats.projectedEarnings)}
               </p>
-              <p className="text-xs text-default-500 mt-1">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 Service charges + interest + principal
               </p>
             </div>
           </div>
-        </CardBody>
-      </Card>
+        </div>
+      </div>
 
       {/* Payment Status Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-        <Card>
-          <CardHeader className="border-b border-divider pb-2">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+          <div className="border-b border-gray-200 dark:border-gray-700 p-4">
             <h2 className="text-lg font-medium">Payment Status</h2>
-          </CardHeader>
-          <CardBody>
+          </div>
+          <div className="p-4">
             <div className="space-y-4 py-2">
               <div className="flex justify-between items-center">
                 <div>
                   <h3 className="font-medium">Upcoming Payments (7 days)</h3>
-                  <p className="text-sm text-default-500">Due soon</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Due soon</p>
                 </div>
-                <div className="bg-warning-100 dark:bg-warning-900/30 text-warning-600 dark:text-warning-400 px-3 py-1 rounded-full text-sm font-medium">
+                <div className="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 px-3 py-1 rounded-full text-sm font-medium">
                   {stats.upcomingPayments}
                 </div>
               </div>
@@ -233,106 +223,85 @@ export default function Dashboard() {
               <div className="flex justify-between items-center">
                 <div>
                   <h3 className="font-medium">Overdue Payments</h3>
-                  <p className="text-sm text-default-500">Past due date</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Past due date</p>
                 </div>
-                <div className="bg-danger-100 dark:bg-danger-900/30 text-danger-600 dark:text-danger-400 px-3 py-1 rounded-full text-sm font-medium">
+                <div className="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-3 py-1 rounded-full text-sm font-medium">
                   {stats.overduePayments}
                 </div>
               </div>
             </div>
-          </CardBody>
-        </Card>
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader className="border-b border-divider pb-2">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+          <div className="border-b border-gray-200 dark:border-gray-700 p-4">
             <h2 className="text-lg font-medium">Payment Schemes</h2>
-          </CardHeader>
-          <CardBody>
-            <div className="space-y-3 py-2">
+          </div>
+          <div className="p-4">
+            <div className="space-y-4">
               {stats.paymentSchemes.map((scheme) => (
-                <div
-                  key={scheme.scheme}
-                  className="flex justify-between items-center"
-                >
-                  <span className="capitalize">{scheme.scheme}</span>
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="h-4 bg-primary-200 dark:bg-primary-800 rounded-full"
-                      style={{
-                        width: `${(scheme.count / stats.totalLoans) * 100}px`,
-                        minWidth: "20px",
-                        maxWidth: "100px",
-                      }}
-                    ></div>
-                    <span className="text-sm">{scheme.count} loans</span>
-                  </div>
+                <div key={scheme.scheme} className="flex justify-between items-center">
+                  <span className="font-medium">{scheme.scheme}</span>
+                  <span className="text-gray-500 dark:text-gray-400">{scheme.count}</span>
                 </div>
               ))}
             </div>
-          </CardBody>
-        </Card>
+          </div>
+        </div>
       </div>
 
-      {/* Recent Loans Section */}
-      <Card className="mt-6">
-        <CardHeader className="border-b border-divider pb-2">
+      {/* Recent Loans */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm mt-6">
+        <div className="border-b border-gray-200 dark:border-gray-700 p-4">
           <h2 className="text-lg font-medium">Recent Loans</h2>
-        </CardHeader>
-        <CardBody>
+        </div>
+        <div className="p-4">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-divider">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead>
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-default-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Client
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-default-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Amount
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-default-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Service Charge
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Start Date
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-default-500 uppercase tracking-wider">
-                    Payment Scheme
-                  </th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-default-500 uppercase tracking-wider">
-                    Action
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Scheme
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-divider">
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {stats.recentLoans.map((loan) => (
-                  <tr
-                    key={loan.id}
-                    className="hover:bg-default-50 dark:hover:bg-default-50/10"
-                  >
-                    <td className="px-4 py-3 whitespace-nowrap text-sm">
+                  <tr key={loan.id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       {loan.clientName}
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {formatCurrency(loan.amount)}
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm">
-                      {formatDate(new Date(loan.startDate))}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      {formatCurrency(loan.serviceCharge)}
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm capitalize">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      {formatDate(loan.startDate)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {loan.paymentScheme}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right">
-                      <a
-                        href={`/schedules/${loan.id}`}
-                        className="text-primary hover:underline"
-                      >
-                        View Details
-                      </a>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </CardBody>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }
