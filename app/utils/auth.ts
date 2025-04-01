@@ -1,5 +1,46 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
+import { prisma } from "@/lib/prisma";
+
+/**
+ * Gets the current user from the token or creates a new user if they don't exist
+ * @param request The incoming request
+ * @returns The user object or null if not authenticated
+ */
+export async function getCurrentUser(request: NextRequest) {
+  try {
+    // Get token from the request
+    const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+    });
+
+    // If no token is found, return null
+    if (!token || !token.email) {
+      return null;
+    }
+
+    // Find the user or create if they don't exist
+    const user = await prisma.user.upsert({
+      where: { email: token.email as string },
+      update: {
+        name: token.name as string,
+        image: token.picture as string,
+        updatedAt: new Date(),
+      },
+      create: {
+        email: token.email as string,
+        name: token.name as string,
+        image: token.picture as string,
+      },
+    });
+
+    return user;
+  } catch (error) {
+    console.error("Error getting current user:", error);
+    return null;
+  }
+}
 
 /**
  * Verifies if the request is authenticated

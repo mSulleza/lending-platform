@@ -1,11 +1,41 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withAuth } from "@/app/utils/auth";
+import { getToken } from "next-auth/jwt";
 
-// GET /api/clients - Get all clients
+// GET /api/clients - Get all clients for the current user
 export const GET = withAuth(async (request: NextRequest): Promise<Response> => {
   try {
+    // Get the current user from the token
+    const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+    });
+
+    if (!token || !token.email) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    // Get the user from the database or create if they don't exist
+    const user = await prisma.user.findUnique({
+      where: { email: token.email as string },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    // Get all clients associated with this user
     const clients = await prisma.client.findMany({
+      where: {
+        userId: user.id,
+      },
       orderBy: {
         createdAt: "desc",
       },
@@ -36,9 +66,37 @@ export const POST = withAuth(async (request: NextRequest): Promise<Response> => 
       );
     }
     
-    // Check if email already exists
-    const existingClient = await prisma.client.findUnique({
-      where: { email },
+    // Get the current user from the token
+    const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+    });
+
+    if (!token || !token.email) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    // Get the user from the database or create if they don't exist
+    const user = await prisma.user.findUnique({
+      where: { email: token.email as string },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found" },
+        { status: 404 }
+      );
+    }
+    
+    // Check if email already exists for this user's clients
+    const existingClient = await prisma.client.findFirst({
+      where: { 
+        email,
+        userId: user.id
+      },
     });
     
     if (existingClient) {
@@ -59,6 +117,7 @@ export const POST = withAuth(async (request: NextRequest): Promise<Response> => 
         state,
         zipCode,
         notes,
+        userId: user.id,
       },
     });
     

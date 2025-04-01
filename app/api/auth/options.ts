@@ -1,5 +1,6 @@
 import GoogleProvider from "next-auth/providers/google";
 import { AuthOptions } from "next-auth";
+import { prisma } from "@/lib/prisma";
 
 // Extend the built-in session types
 declare module "next-auth" {
@@ -71,17 +72,71 @@ export const authOptions: AuthOptions = {
 
             // If both arrays are empty, allow all users (default behavior)
             if (allowedEmails.length === 0 && allowedDomains.length === 0) {
+                // Create or update user in the database
+                try {
+                    await prisma.user.upsert({
+                        where: { email: userEmail },
+                        update: {
+                            name: user.name,
+                            image: user.image,
+                            updatedAt: new Date(),
+                        },
+                        create: {
+                            email: userEmail,
+                            name: user.name,
+                            image: user.image,
+                        },
+                    });
+                } catch (error) {
+                    console.error("Error creating/updating user:", error);
+                }
                 return true;
             }
 
             // Check if email is in the allowed list
             if (allowedEmails.includes(userEmail)) {
+                // Create or update user in the database
+                try {
+                    await prisma.user.upsert({
+                        where: { email: userEmail },
+                        update: {
+                            name: user.name,
+                            image: user.image,
+                            updatedAt: new Date(),
+                        },
+                        create: {
+                            email: userEmail,
+                            name: user.name,
+                            image: user.image,
+                        },
+                    });
+                } catch (error) {
+                    console.error("Error creating/updating user:", error);
+                }
                 return true;
             }
 
             // Check if email domain is in the allowed domains
             const emailDomain = userEmail.split('@')[1];
             if (emailDomain && allowedDomains.includes(emailDomain)) {
+                // Create or update user in the database
+                try {
+                    await prisma.user.upsert({
+                        where: { email: userEmail },
+                        update: {
+                            name: user.name,
+                            image: user.image,
+                            updatedAt: new Date(),
+                        },
+                        create: {
+                            email: userEmail,
+                            name: user.name,
+                            image: user.image,
+                        },
+                    });
+                } catch (error) {
+                    console.error("Error creating/updating user:", error);
+                }
                 return true;
             }
 

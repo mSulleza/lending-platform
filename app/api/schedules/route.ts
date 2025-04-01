@@ -1,11 +1,49 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withAuth } from "@/app/utils/auth";
+import { getToken } from "next-auth/jwt";
 
-// GET /api/schedules - Get all loan schedules
+// GET /api/schedules - Get all loan schedules for the current user's clients
 export const GET = withAuth(async (request: NextRequest): Promise<Response> => {
   try {
+    // Get the current user from the token
+    const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+    });
+
+    if (!token || !token.email) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    // Get the user from the database
+    const user = await prisma.user.findUnique({
+      where: { email: token.email as string },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    // Get all clients belonging to this user
+    const userClients = await prisma.client.findMany({
+      where: { userId: user.id },
+      select: { id: true }
+    });
+
+    const clientIds = userClients.map(client => client.id);
+
+    // Get all loan schedules for these clients
     const schedules = await prisma.loanSchedule.findMany({
+      where: {
+        clientId: { in: clientIds }
+      },
       orderBy: {
         createdAt: "desc",
       },
@@ -45,14 +83,42 @@ export const POST = withAuth(async (request: NextRequest): Promise<Response> => 
       );
     }
     
-    // Check if client exists
-    const existingClient = await prisma.client.findUnique({
-      where: { id: clientId },
+    // Get the current user from the token
+    const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+    });
+
+    if (!token || !token.email) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    // Get the user from the database
+    const user = await prisma.user.findUnique({
+      where: { email: token.email as string },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found" },
+        { status: 404 }
+      );
+    }
+    
+    // Check if client exists and belongs to the current user
+    const client = await prisma.client.findFirst({
+      where: { 
+        id: clientId,
+        userId: user.id
+      },
     });
     
-    if (!existingClient) {
+    if (!client) {
       return NextResponse.json(
-        { error: "Client not found" },
+        { error: "Client not found or does not belong to you" },
         { status: 404 }
       );
     }

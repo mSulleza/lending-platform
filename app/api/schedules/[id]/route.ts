@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getToken } from "next-auth/jwt";
 
 // GET /api/schedules/[id] - Get a specific loan schedule
 export async function GET(
@@ -9,8 +10,42 @@ export async function GET(
   try {
     const id = params.id;
 
-    const schedule = await prisma.loanSchedule.findUnique({
-      where: { id },
+    // Get the current user from the token
+    const token = await getToken({ req: request as any });
+    
+    if (!token || !token.email) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+    
+    // Get the user from the database
+    const user = await prisma.user.findUnique({
+      where: { email: token.email as string },
+    });
+    
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found" },
+        { status: 404 }
+      );
+    }
+    
+    // Get all clients belonging to this user
+    const userClients = await prisma.client.findMany({
+      where: { userId: user.id },
+      select: { id: true }
+    });
+    
+    const clientIds = userClients.map(client => client.id);
+
+    // Now get the schedule and ensure it belongs to one of the user's clients
+    const schedule = await prisma.loanSchedule.findFirst({
+      where: { 
+        id,
+        clientId: { in: clientIds }
+      },
       include: {
         client: {
           select: {
