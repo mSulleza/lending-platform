@@ -9,7 +9,7 @@ import { usePathname } from "next/navigation";
 import { Logo } from "@/components/icons";
 import { siteConfig } from "@/config/site";
 import CurrencySettings from "./CurrencySettings";
-import { Logout } from "./Logout";
+import { Logout } from "./logout";
 
 export const Navbar = () => {
   const { data: session } = useSession();
