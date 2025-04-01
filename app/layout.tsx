@@ -50,8 +50,8 @@ export default function RootLayout({
               <div className="container mx-auto max-w-7xl py-8 px-6">
                 <div className="flex justify-center items-center mt-8 pt-6 border-t border-divider">
                   <p className="text-sm text-default-500">
-                    Copyright © {new Date().getFullYear()} | {siteConfig.name}{" "}
-                    | Developed by msulleza
+                    Copyright © {new Date().getFullYear()} | {siteConfig.name} |
+                    Developed by msulleza
                   </p>
                 </div>
               </div>
