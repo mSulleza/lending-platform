@@ -8,12 +8,12 @@ import { Input, Select, SelectItem, Switch } from "@nextui-org/react";
 import { Slider } from "@nextui-org/slider";
 import { Spinner } from "@nextui-org/spinner";
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableColumn,
-    TableHeader,
-    TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableColumn,
+  TableHeader,
+  TableRow,
 } from "@nextui-org/table";
 import { Tooltip } from "@nextui-org/tooltip";
 import { useEffect, useRef, useState } from "react";
@@ -266,7 +266,8 @@ export default function LoanAdviser() {
   };
 
   const toggleReceivables = () => {
-    setIsReceivablesExpanded(!isReceivablesExpanded);
+    // Ensure state changes immediately, important for mobile responsiveness
+    setIsReceivablesExpanded((prevState) => !prevState);
   };
 
   const generateMonthOptions = () => {
@@ -796,9 +797,12 @@ export default function LoanAdviser() {
 
       {/* Receivables Configuration Card */}
       <Card className="bg-default-50 dark:bg-default-50/5">
-        <CardHeader className="border-b border-divider pb-2 flex justify-between">
+        <CardHeader 
+          className="border-b border-divider pb-2 flex justify-between cursor-pointer"
+          onClick={toggleReceivables}
+        >
           <h2 className="text-lg font-medium">Receivables Configuration</h2>
-          <div className="flex gap-2 items-center">
+          <div className="flex gap-2 items-center" onClick={(e) => e.stopPropagation()}>
             <span className="text-sm text-default-500">
               {useManualReceivables ? "Manual" : "Scheduled"}
             </span>
@@ -816,6 +820,7 @@ export default function LoanAdviser() {
                 e.stopPropagation(); // Prevent event bubbling
                 toggleReceivables();
               }}
+              className="p-2 touch-manipulation min-w-[40px] min-h-[40px]"
             >
               {isReceivablesExpanded ? (
                 <span className="text-lg">▲</span>

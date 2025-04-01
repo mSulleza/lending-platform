@@ -1,8 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { withAuth } from "@/app/utils/auth";
 
 // GET /api/schedules - Get all loan schedules
-export async function GET() {
+export const GET = withAuth(async (request: NextRequest) => {
   try {
     const schedules = await prisma.loanSchedule.findMany({
       orderBy: {
@@ -27,10 +28,10 @@ export async function GET() {
       { status: 500 }
     );
   }
-}
+});
 
 // POST /api/schedules - Create a new loan schedule
-export async function POST(request: Request) {
+export const POST = withAuth(async (request: NextRequest) => {
   try {
     const body = await request.json();
     
@@ -86,4 +87,4 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-} 
+}); 

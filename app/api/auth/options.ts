@@ -22,6 +22,26 @@ if (!process.env.NEXTAUTH_SECRET) {
     console.warn("Missing NEXTAUTH_SECRET. Using a default secret is not recommended for production.");
 }
 
+// Parse allowed emails from environment variable
+const getAllowedEmails = (): string[] => {
+    const allowedEmails = process.env.ALLOWED_EMAILS;
+    if (!allowedEmails) {
+        console.warn("ALLOWED_EMAILS environment variable not set. All Google accounts can log in.");
+        return [];
+    }
+    return allowedEmails.split(',').map(email => email.trim().toLowerCase());
+};
+
+// Parse allowed domains from environment variable
+const getAllowedDomains = (): string[] => {
+    const allowedDomains = process.env.ALLOWED_DOMAINS;
+    if (!allowedDomains) {
+        console.warn("ALLOWED_DOMAINS environment variable not set. No domain restrictions applied.");
+        return [];
+    }
+    return allowedDomains.split(',').map(domain => domain.trim().toLowerCase());
+};
+
 export const authOptions: AuthOptions = {
     providers: [
         GoogleProvider({
@@ -34,6 +54,41 @@ export const authOptions: AuthOptions = {
         maxAge: 30 * 24 * 60 * 60, // 30 days
     },
     callbacks: {
+        async signIn({ user, account, profile, email, credentials }) {
+            // If auth method is not Google, deny sign in
+            if (account?.provider !== "google") {
+                return false;
+            }
+
+            const userEmail = user.email?.toLowerCase();
+            if (!userEmail) {
+                console.error("User has no email");
+                return false;
+            }
+
+            const allowedEmails = getAllowedEmails();
+            const allowedDomains = getAllowedDomains();
+
+            // If both arrays are empty, allow all users (default behavior)
+            if (allowedEmails.length === 0 && allowedDomains.length === 0) {
+                return true;
+            }
+
+            // Check if email is in the allowed list
+            if (allowedEmails.includes(userEmail)) {
+                return true;
+            }
+
+            // Check if email domain is in the allowed domains
+            const emailDomain = userEmail.split('@')[1];
+            if (emailDomain && allowedDomains.includes(emailDomain)) {
+                return true;
+            }
+
+            // Email not in allowed list and domain not in allowed domains
+            console.warn(`Unauthorized sign in attempt: ${userEmail}`);
+            return false;
+        },
         async jwt({ token, account, profile }) {
             // Persist the OAuth access_token to the token right after signin
             if (account) {

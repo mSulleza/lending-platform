@@ -1,9 +1,23 @@
 "use client";
 
 import { signIn, useSession } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function Login() {
   const { data: session, status } = useSession();
+  const [error, setError] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  
+  useEffect(() => {
+    // Check for error in the URL
+    const errorParam = searchParams?.get("error");
+    if (errorParam === "AccessDenied") {
+      setError("Your email is not authorized to access this application.");
+    } else if (errorParam) {
+      setError("An error occurred during sign in. Please try again.");
+    }
+  }, [searchParams]);
 
   if (status === "loading") {
     return (
@@ -36,7 +50,7 @@ export default function Login() {
                 </div>
               )}
               <div className="text-center">
-                <p className="text-xl font-semibold">{session.user?.name}</p>
+                <p className="text-2xl font-semibold">{session.user?.name}</p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   {session.user?.email}
                 </p>
@@ -66,6 +80,13 @@ export default function Login() {
               Sign in to access your lending management platform
             </p>
           </div>
+          
+          {error && (
+            <div className="bg-danger-50 dark:bg-danger-900/20 text-danger-600 dark:text-danger-400 p-3 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
+          
           <div className="flex justify-center py-5 w-full">
             <button
               onClick={() => signIn("google", { callbackUrl: "/" })}
@@ -102,8 +123,13 @@ export default function Login() {
               <span className="absolute -bottom-1 right-1/2 w-0 h-0.5 bg-gradient-to-l from-primary to-secondary group-hover:w-1/2 group-hover:transition-all"></span>
             </button>
           </div>
-          <div className="flex justify-center text-sm text-gray-500 dark:text-gray-400">
-            By signing in, you agree to our Terms of Service
+          <div className="flex flex-col gap-2 items-center text-sm">
+            <p className="text-gray-500 dark:text-gray-400 text-center">
+              By signing in, you agree to our Terms of Service
+            </p>
+            <p className="text-gray-400 dark:text-gray-500 text-xs text-center">
+              Only authorized email addresses are allowed to access this platform
+            </p>
           </div>
         </div>
       </div>
