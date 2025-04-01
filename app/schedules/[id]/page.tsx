@@ -1,9 +1,9 @@
 "use client";
 
 import {
-  calculatePayment,
-  formatCurrency,
-  formatDate,
+    calculatePayment,
+    formatCurrency,
+    formatDate,
 } from "@/app/utils/formatters";
 import { Button } from "@nextui-org/button";
 import { Card, CardBody, CardHeader } from "@nextui-org/card";
@@ -13,6 +13,7 @@ import { Spinner } from "@nextui-org/spinner";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import CloseLoanModal from "../components/CloseLoanModal";
+import GenerateContractButton from "../components/GenerateContractButton";
 import PaymentScheduleTable from "../components/PaymentScheduleTable";
 
 interface Schedule {
@@ -268,6 +269,11 @@ export default function ScheduleDetailPage() {
                   Close Loan
                 </Button>
               )}
+              <GenerateContractButton 
+                loanId={id} 
+                hasContract={schedule.hasContract}
+                onSuccess={refreshData}
+              />
             </>
           )}
           <Button
