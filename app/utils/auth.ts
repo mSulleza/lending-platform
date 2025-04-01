@@ -4,9 +4,9 @@ import { getToken } from "next-auth/jwt";
 /**
  * Verifies if the request is authenticated
  * @param request The incoming request
- * @returns A tuple with [isAuthenticated, response] where response is only set if not authenticated
+ * @returns A tuple with [isAuthenticated, response] where response is the error response if not authenticated
  */
-export async function verifyAuth(request: NextRequest): Promise<[boolean, NextResponse | null]> {
+export async function verifyAuth(request: NextRequest): Promise<[boolean, Response]> {
   try {
     // Get token from the request
     const token = await getToken({
@@ -26,7 +26,7 @@ export async function verifyAuth(request: NextRequest): Promise<[boolean, NextRe
     }
 
     // Token is valid
-    return [true, null];
+    return [true, NextResponse.json({ success: true })];
   } catch (error) {
     console.error("Auth verification error:", error);
     return [
@@ -45,9 +45,9 @@ export async function verifyAuth(request: NextRequest): Promise<[boolean, NextRe
  * @returns A function that verifies auth before calling the handler
  */
 export function withAuth(
-  handler: (request: NextRequest, context: any) => Promise<NextResponse>
+  handler: (request: NextRequest, context: any) => Promise<Response>
 ) {
-  return async (request: NextRequest, context: any) => {
+  return async (request: NextRequest, context: any): Promise<Response> => {
     const [isAuthenticated, response] = await verifyAuth(request);
     
     if (!isAuthenticated) {

@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { withAuth } from "@/app/utils/auth";
 
 // GET /api/schedules - Get all loan schedules
-export const GET = withAuth(async (request: NextRequest) => {
+export const GET = withAuth(async (request: NextRequest): Promise<Response> => {
   try {
     const schedules = await prisma.loanSchedule.findMany({
       orderBy: {
@@ -31,7 +31,7 @@ export const GET = withAuth(async (request: NextRequest) => {
 });
 
 // POST /api/schedules - Create a new loan schedule
-export const POST = withAuth(async (request: NextRequest) => {
+export const POST = withAuth(async (request: NextRequest): Promise<Response> => {
   try {
     const body = await request.json();
     

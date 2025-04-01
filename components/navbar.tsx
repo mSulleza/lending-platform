@@ -9,7 +9,7 @@ import { usePathname } from "next/navigation";
 import { Logo } from "@/components/icons";
 import { siteConfig } from "@/config/site";
 import CurrencySettings from "./CurrencySettings";
-import { Logout } from "./logout";
+import { Logout } from "./Logout";
 
 export const Navbar = () => {
   const { data: session } = useSession();
@@ -27,7 +27,9 @@ export const Navbar = () => {
                 <div className="flex flex-shrink-0 items-center">
                   <NextLink href="/" className="flex items-center gap-2">
                     <Logo />
-                    <span className="font-bold text-lg">Lending Management</span>
+                    <span className="font-bold text-lg">
+                      Lending Management
+                    </span>
                   </NextLink>
                 </div>
                 <div className="hidden lg:ml-6 lg:flex lg:space-x-8">

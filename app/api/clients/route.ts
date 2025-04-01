@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { withAuth } from "@/app/utils/auth";
 
 // GET /api/clients - Get all clients
-export const GET = withAuth(async (request: NextRequest) => {
+export const GET = withAuth(async (request: NextRequest): Promise<Response> => {
   try {
     const clients = await prisma.client.findMany({
       orderBy: {
@@ -22,7 +22,7 @@ export const GET = withAuth(async (request: NextRequest) => {
 });
 
 // POST /api/clients - Create a new client
-export const POST = withAuth(async (request: NextRequest) => {
+export const POST = withAuth(async (request: NextRequest): Promise<Response> => {
   try {
     const body = await request.json();
     
