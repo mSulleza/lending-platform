@@ -171,45 +171,67 @@ function generatePaymentDates(
   paymentScheme: string
 ) {
   const dates: Date[] = [];
-  
-  // First, set up the payment interval
-  let numberOfPayments = loanTerms;
-  let daysToAdd = 30; // Default: monthly
-  
-  // Adjust number of payments and interval based on scheme
-  switch (paymentScheme.toLowerCase()) {
-    case 'weekly':
-      numberOfPayments = loanTerms * 4;
-      daysToAdd = 7;
-      break;
-    case 'bi-weekly':
-      numberOfPayments = loanTerms * 2;
-      daysToAdd = 14;
-      break;
-    case 'monthly':
-      numberOfPayments = loanTerms;
-      daysToAdd = 30;
-      break;
-    case 'quarterly':
-      numberOfPayments = Math.ceil(loanTerms / 3);
-      daysToAdd = 90;
-      break;
-  }
-  
-  // Start with the loan date
   let currentDate = new Date(startDate);
   
-  // Add interval to the start date to get the first payment date
-  // This ensures first payment comes after loan start date
-  currentDate.setDate(currentDate.getDate() + daysToAdd);
-  
-  // Generate dates
-  for (let i = 0; i < numberOfPayments; i++) {
-    const paymentDate = new Date(currentDate);
-    dates.push(paymentDate);
+  // For bi-weekly payments, we want to ensure payments fall on the 1st and 15th of each month
+  if (paymentScheme.toLowerCase() === 'bi-weekly') {
+    // Calculate total number of payments (2 per month * number of months)
+    const totalPayments = loanTerms * 2;
     
-    // Move to next payment date
+    for (let i = 0; i < totalPayments; i++) {
+      // Clone the current date to avoid modifying it
+      const paymentDate = new Date(currentDate);
+      
+      // If we're at the start of the month (or it's the first payment)
+      if (i === 0 || currentDate.getDate() <= 1) {
+        // Set to the 1st of the current month
+        paymentDate.setDate(1);
+      } else {
+        // Set to the 15th of the current month
+        paymentDate.setDate(15);
+      }
+      
+      dates.push(paymentDate);
+      
+      // If we just added a payment for the 15th, move to the 1st of next month
+      if (currentDate.getDate() >= 15) {
+        currentDate.setMonth(currentDate.getMonth() + 1);
+        currentDate.setDate(1);
+      } else {
+        // If we just added a payment for the 1st, move to the 15th
+        currentDate.setDate(15);
+      }
+    }
+  } else {
+    // Handle other payment schemes
+    let numberOfPayments = loanTerms;
+    let daysToAdd = 30; // Default: monthly
+    
+    // Adjust number of payments and interval based on scheme
+    switch (paymentScheme.toLowerCase()) {
+      case 'weekly':
+        numberOfPayments = loanTerms * 4;
+        daysToAdd = 7;
+        break;
+      case 'monthly':
+        numberOfPayments = loanTerms;
+        daysToAdd = 30;
+        break;
+      case 'quarterly':
+        numberOfPayments = Math.ceil(loanTerms / 3);
+        daysToAdd = 90;
+        break;
+    }
+    
+    // Add interval to the start date to get the first payment date
     currentDate.setDate(currentDate.getDate() + daysToAdd);
+    
+    // Generate dates
+    for (let i = 0; i < numberOfPayments; i++) {
+      const paymentDate = new Date(currentDate);
+      dates.push(paymentDate);
+      currentDate.setDate(currentDate.getDate() + daysToAdd);
+    }
   }
   
   return dates;

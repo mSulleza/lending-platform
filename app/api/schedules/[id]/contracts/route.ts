@@ -9,6 +9,10 @@ import { PDFDocument } from "pdf-lib";
 import { spawn } from "child_process";
 import { promisify } from "util";
 import { mkdir } from "fs/promises";
+import { generateDocx } from "@/lib/docx";
+import { writeFile } from "fs/promises";
+import { join } from "path";
+import { tmpdir } from "os";
 
 // Directory for storing generated contracts
 const CONTRACTS_DIR = path.join(process.cwd(), "public", "contracts");
@@ -18,52 +22,37 @@ async function ensureContractsDir() {
   await fs.ensureDir(CONTRACTS_DIR);
 }
 
-// Check if LibreOffice is available
-async function isLibreOfficeAvailable() {
+// Helper function to check if LibreOffice is available
+async function isLibreOfficeAvailable(): Promise<boolean> {
   return new Promise((resolve) => {
-    const process = spawn('which', ['libreoffice']);
-    
-    process.on('close', (code) => {
-      resolve(code === 0);
-    });
-    
-    process.on('error', () => {
-      resolve(false);
-    });
+    const process = spawn("which", ["libreoffice"]);
+    process.on("close", (code) => resolve(code === 0));
   });
 }
 
-// Helper function to convert DOCX to PDF using libreoffice (requires libreoffice to be installed)
-async function convertToPdf(docxPath: string, pdfPath: string): Promise<string> {
-  // Check if libreoffice is available
-  const libreOfficeAvailable = await isLibreOfficeAvailable();
-  
-  if (!libreOfficeAvailable) {
-    console.warn("LibreOffice is not available for PDF conversion");
-    throw new Error("PDF conversion not available");
+// Helper function to convert DOCX to PDF using LibreOffice
+async function convertToPdf(docxPath: string, pdfPath: string): Promise<void> {
+  const hasLibreOffice = await isLibreOfficeAvailable();
+  if (!hasLibreOffice) {
+    throw new Error("LibreOffice is not available for PDF conversion");
   }
-  
+
   return new Promise((resolve, reject) => {
-    // Create a child process to convert docx to pdf using libreoffice
-    const process = spawn('libreoffice', [
-      '--headless',
-      '--convert-to',
-      'pdf',
-      '--outdir',
-      path.dirname(pdfPath),
-      docxPath
+    const process = spawn("libreoffice", [
+      "--headless",
+      "--convert-to",
+      "pdf",
+      "--outdir",
+      tmpdir(),
+      docxPath,
     ]);
 
-    process.on('close', (code) => {
-      if (code !== 0) {
-        reject(new Error(`Conversion process exited with code ${code}`));
-        return;
+    process.on("close", (code) => {
+      if (code === 0) {
+        resolve();
+      } else {
+        reject(new Error(`PDF conversion failed with code ${code}`));
       }
-      resolve(pdfPath);
-    });
-
-    process.on('error', (err) => {
-      reject(new Error(`Failed to start conversion process: ${err.message}`));
     });
   });
 }
