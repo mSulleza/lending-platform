@@ -6,10 +6,10 @@ import { signOut } from "next-auth/react";
 export const Logout = () => {
   return (
     <button
-      onClick={() => signOut()}
-      className="inline-flex items-center gap-x-1.5 rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 transition-transform hover:scale-105"
+      onClick={() => signOut({ callbackUrl: "/" })}
+      className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
     >
-      <ArrowRightOnRectangleIcon className="h-5 w-5" aria-hidden="true" />
+      <ArrowRightOnRectangleIcon className="h-5 w-5" />
       Logout
     </button>
   );
