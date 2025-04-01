@@ -1,9 +1,9 @@
 "use client";
 
-import { Button } from "@nextui-org/button";
-import { Input, Textarea } from "@nextui-org/input";
-import { InfoIcon } from "@nextui-org/shared-icons";
-import { Tooltip } from "@nextui-org/tooltip";
+import { Button } from "@heroui/button";
+import { Input, Textarea } from "@heroui/input";
+import { InfoIcon } from "@heroui/shared-icons";
+import { Tooltip } from "@heroui/tooltip";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 

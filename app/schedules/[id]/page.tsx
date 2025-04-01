@@ -5,11 +5,11 @@ import {
     formatCurrency,
     formatDate,
 } from "@/app/utils/formatters";
-import { Button } from "@nextui-org/button";
-import { Card, CardBody, CardHeader } from "@nextui-org/card";
-import { Chip } from "@nextui-org/chip";
-import { Divider } from "@nextui-org/divider";
-import { Spinner } from "@nextui-org/spinner";
+import { Button } from "@heroui/button";
+import { Card, CardBody, CardHeader } from "@heroui/card";
+import { Chip } from "@heroui/chip";
+import { Divider } from "@heroui/divider";
+import { Spinner } from "@heroui/spinner";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import CloseLoanModal from "../components/CloseLoanModal";

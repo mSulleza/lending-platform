@@ -1,9 +1,9 @@
 "use client";
 
-import { Button } from "@nextui-org/button";
-import { Card, CardBody, CardHeader } from "@nextui-org/card";
-import { Input } from "@nextui-org/input";
-import { Spinner } from "@nextui-org/spinner";
+import { Button } from "@heroui/button";
+import { Card, CardBody, CardHeader } from "@heroui/card";
+import { Input } from "@heroui/input";
+import { Spinner } from "@heroui/spinner";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 

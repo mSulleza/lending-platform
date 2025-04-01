@@ -1,9 +1,9 @@
 "use client";
 
 import { getCurrencyConfig } from "@/config/currency";
-import { Button } from "@nextui-org/button";
-import { Input } from "@nextui-org/input";
-import { Select, SelectItem } from "@nextui-org/select";
+import { Button } from "@heroui/button";
+import { Input } from "@heroui/input";
+import { Select, SelectItem } from "@heroui/select";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -236,7 +236,7 @@ export default function AddScheduleForm({ onSuccess }: AddScheduleFormProps) {
           }}
         >
           {clients.map((client) => (
-            <SelectItem key={client.id} value={client.id}>
+            <SelectItem key={client.id}>
               {client.firstName} {client.lastName} ({client.email})
             </SelectItem>
           ))}
@@ -338,7 +338,7 @@ export default function AddScheduleForm({ onSuccess }: AddScheduleFormProps) {
           labelPlacement="outside"
         >
           {paymentSchemes.map((scheme) => (
-            <SelectItem key={scheme.value} value={scheme.value}>
+            <SelectItem key={scheme.value}>
               {scheme.label}
             </SelectItem>
           ))}

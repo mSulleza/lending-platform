@@ -1,8 +1,8 @@
 "use client";
 
-import { Button } from "@nextui-org/button";
-import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
-import { Select, SelectItem } from "@nextui-org/select";
+import { Button } from "@heroui/button";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@heroui/modal";
+import { Select, SelectItem } from "@heroui/select";
 import { useState } from "react";
 
 interface GenerateContractButtonProps {
@@ -208,7 +208,7 @@ export default function GenerateContractButton({
                       fullWidth
                     >
                       {contractTypeOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
+                        <SelectItem key={option.value}>
                           {option.label}
                         </SelectItem>
                       ))}

@@ -1,26 +1,26 @@
 "use client";
 
-import { Button } from "@nextui-org/button";
-import { Card, CardBody, CardHeader } from "@nextui-org/card";
-import { Chip } from "@nextui-org/chip";
+import { Button } from "@heroui/button";
+import { Card, CardBody, CardHeader } from "@heroui/card";
+import { Chip } from "@heroui/chip";
 import {
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownTrigger,
-} from "@nextui-org/dropdown";
-import { Input } from "@nextui-org/input";
-import { Pagination } from "@nextui-org/pagination";
-import { SearchIcon } from "@nextui-org/shared-icons";
-import { Spinner } from "@nextui-org/spinner";
+    Dropdown,
+    DropdownItem,
+    DropdownMenu,
+    DropdownTrigger,
+} from "@heroui/dropdown";
+import { Input } from "@heroui/input";
+import { Pagination } from "@heroui/pagination";
+import { SearchIcon } from "@heroui/shared-icons";
+import { Spinner } from "@heroui/spinner";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableColumn,
-  TableHeader,
-  TableRow,
-} from "@nextui-org/table";
+    Table,
+    TableBody,
+    TableCell,
+    TableColumn,
+    TableHeader,
+    TableRow,
+} from "@heroui/table";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 

@@ -2,11 +2,11 @@
 
 import { useCurrency } from "@/app/hooks/useCurrency";
 import { availableCurrencies, defaultCurrencyConfig } from "@/config/currency";
-import { Button } from "@nextui-org/button";
-import { Card, CardBody, CardHeader } from "@nextui-org/card";
-import { Divider } from "@nextui-org/divider";
-import { Input } from "@nextui-org/input";
-import { Select, SelectItem } from "@nextui-org/select";
+import { Button } from "@heroui/button";
+import { Card, CardBody, CardHeader } from "@heroui/card";
+import { Divider } from "@heroui/divider";
+import { Input } from "@heroui/input";
+import { Select, SelectItem } from "@heroui/select";
 import { useEffect, useState } from "react";
 
 export default function SettingsPage() {
@@ -82,7 +82,7 @@ export default function SettingsPage() {
             className="max-w-xs"
           >
             {availableCurrencies.map((currency) => (
-              <SelectItem key={currency.code} value={currency.code}>
+              <SelectItem key={currency.code}>
                 {currency.name} ({currency.symbol})
               </SelectItem>
             ))}

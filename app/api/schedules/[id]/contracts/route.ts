@@ -57,33 +57,76 @@ async function convertToPdf(docxPath: string, pdfPath: string): Promise<void> {
   });
 }
 
-// Helper function to generate a docx document from a template
-async function generateDocx(templatePath: string, data: Record<string, any>, outputPath: string): Promise<string> {
-  // Read the template
-  const content = await fs.readFile(templatePath, "binary");
-  
-  // Create a zip of the read file content
-  const zip = new PizZip(content);
-  
-  // Initialize docxtemplater with the zip file
-  const doc = new Docxtemplater(zip, {
-    paragraphLoop: true,
-    linebreaks: true,
+// Helper function to format date
+function formatDate(date: Date): string {
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
   });
-  
-  // Set the template variables
-  doc.render(data);
-  
-  // Get the document as a buffer
-  const buffer = doc.getZip().generate({
-    type: "nodebuffer",
-    compression: "DEFLATE",
-  });
-  
-  // Write the document to disk
-  await fs.writeFile(outputPath, buffer);
-  
-  return outputPath;
+}
+
+// Helper function to convert number to words
+function numberToWords(num: number): string {
+  const ones = [
+    "",
+    "one",
+    "two",
+    "three",
+    "four",
+    "five",
+    "six",
+    "seven",
+    "eight",
+    "nine",
+    "ten",
+    "eleven",
+    "twelve",
+    "thirteen",
+    "fourteen",
+    "fifteen",
+    "sixteen",
+    "seventeen",
+    "eighteen",
+    "nineteen",
+  ];
+  const tens = [
+    "",
+    "",
+    "twenty",
+    "thirty",
+    "forty",
+    "fifty",
+    "sixty",
+    "seventy",
+    "eighty",
+    "ninety",
+  ];
+
+  if (num === 0) return "zero";
+  if (num < 20) return ones[num];
+  if (num < 100) {
+    return tens[Math.floor(num / 10)] + (num % 10 ? " " + ones[num % 10] : "");
+  }
+  if (num < 1000) {
+    return (
+      ones[Math.floor(num / 100)] +
+      " hundred" +
+      (num % 100 ? " and " + numberToWords(num % 100) : "")
+    );
+  }
+  if (num < 1000000) {
+    return (
+      numberToWords(Math.floor(num / 1000)) +
+      " thousand" +
+      (num % 1000 ? " " + numberToWords(num % 1000) : "")
+    );
+  }
+  return (
+    numberToWords(Math.floor(num / 1000000)) +
+    " million" +
+    (num % 1000000 ? " " + numberToWords(num % 1000000) : "")
+  );
 }
 
 // POST /api/schedules/[id]/contracts - Generate contracts for a loan schedule
@@ -131,34 +174,28 @@ export const POST = withAuth(async (request: NextRequest, { params }: { params: 
     
     // Template data for the contract
     const templateData = {
-      clientFirstName: loanSchedule.client.firstName,
-      clientLastName: loanSchedule.client.lastName,
-      clientFullName: `${loanSchedule.client.firstName} ${loanSchedule.client.lastName}`,
-      clientAddress: loanSchedule.client.address || "",
-      clientCity: loanSchedule.client.city || "",
-      clientState: loanSchedule.client.state || "",
-      clientZipCode: loanSchedule.client.zipCode || "",
-      clientEmail: loanSchedule.client.email,
+      clientName: `${loanSchedule.client.firstName} ${loanSchedule.client.lastName}`,
+      clientAddress: `${loanSchedule.client.address || ""}, ${loanSchedule.client.city || ""}, ${loanSchedule.client.state || ""} ${loanSchedule.client.zipCode || ""}`,
       clientPhone: loanSchedule.client.phone || "",
+      clientEmail: loanSchedule.client.email,
       loanAmount: loanSchedule.loanAmount.toFixed(2),
-      loanAmountWords: numberToWords(loanSchedule.loanAmount),
-      monthlyInterest: loanSchedule.monthlyInterest.toFixed(2),
-      loanTerms: loanSchedule.loanTerms,
-      paymentScheme: loanSchedule.paymentScheme,
+      loanAmountInWords: numberToWords(loanSchedule.loanAmount),
+      interestRate: loanSchedule.monthlyInterest.toFixed(2),
+      termInMonths: loanSchedule.loanTerms,
       startDate: formatDate(loanSchedule.startDate),
-      firstPaymentDate: loanSchedule.payments.length > 0 
-        ? formatDate(loanSchedule.payments[0].dueDate) 
-        : "",
-      lastPaymentDate: loanSchedule.payments.length > 0 
+      endDate: loanSchedule.payments.length > 0 
         ? formatDate(loanSchedule.payments[loanSchedule.payments.length - 1].dueDate) 
         : "",
-      currentDate: formatDate(new Date()),
-      paymentAmount: loanSchedule.payments.length > 0 
+      monthlyPayment: loanSchedule.payments.length > 0 
         ? loanSchedule.payments[0].amount.toFixed(2) 
         : "0.00",
-      paymentAmountWords: loanSchedule.payments.length > 0 
+      monthlyPaymentInWords: loanSchedule.payments.length > 0 
         ? numberToWords(loanSchedule.payments[0].amount) 
-        : "",
+        : "zero",
+      totalPayment: (loanSchedule.payments.reduce((sum: number, payment: { amount: number }) => sum + payment.amount, 0)).toFixed(2),
+      totalPaymentInWords: numberToWords(loanSchedule.payments.reduce((sum: number, payment: { amount: number }) => sum + payment.amount, 0)),
+      totalInterest: (loanSchedule.payments.reduce((sum: number, payment: { amount: number }) => sum + payment.amount, 0) - loanSchedule.loanAmount).toFixed(2),
+      totalInterestInWords: numberToWords(loanSchedule.payments.reduce((sum: number, payment: { amount: number }) => sum + payment.amount, 0) - loanSchedule.loanAmount)
     };
     
     // Determine which template to use
@@ -237,89 +274,4 @@ export const GET = withAuth(async (request: NextRequest, { params }: { params: {
       { status: 500 }
     );
   }
-});
-
-// Helper function to format dates
-function formatDate(date: Date) {
-  return new Date(date).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-}
-
-// Helper function to convert numbers to words
-function numberToWords(amount: number) {
-  const ones = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine',
-                'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen',
-                'seventeen', 'eighteen', 'nineteen'];
-  const tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
-  
-  const numString = amount.toFixed(2);
-  const [dollars, cents] = numString.split('.');
-  
-  let result = '';
-  
-  // Convert dollars part
-  const numDollars = parseInt(dollars);
-  if (numDollars === 0) {
-    result = 'zero';
-  } else {
-    // Handle trillions
-    if (numDollars >= 1000000000000) {
-      result += `${numberToWords(Math.floor(numDollars / 1000000000000))} trillion `;
-      if (numDollars % 1000000000000 !== 0) {
-        result += numberToWords(numDollars % 1000000000000);
-      }
-    }
-    // Handle billions
-    else if (numDollars >= 1000000000) {
-      result += `${numberToWords(Math.floor(numDollars / 1000000000))} billion `;
-      if (numDollars % 1000000000 !== 0) {
-        result += numberToWords(numDollars % 1000000000);
-      }
-    }
-    // Handle millions
-    else if (numDollars >= 1000000) {
-      result += `${numberToWords(Math.floor(numDollars / 1000000))} million `;
-      if (numDollars % 1000000 !== 0) {
-        result += numberToWords(numDollars % 1000000);
-      }
-    }
-    // Handle thousands
-    else if (numDollars >= 1000) {
-      result += `${numberToWords(Math.floor(numDollars / 1000))} thousand `;
-      if (numDollars % 1000 !== 0) {
-        result += numberToWords(numDollars % 1000);
-      }
-    }
-    // Handle hundreds
-    else if (numDollars >= 100) {
-      result += `${numberToWords(Math.floor(numDollars / 100))} hundred `;
-      if (numDollars % 100 !== 0) {
-        result += numberToWords(numDollars % 100);
-      }
-    }
-    // Handle tens and ones
-    else if (numDollars >= 20) {
-      result += tens[Math.floor(numDollars / 10)];
-      if (numDollars % 10 !== 0) {
-        result += `-${ones[numDollars % 10]}`;
-      }
-    }
-    // Handle teens and ones
-    else {
-      result += ones[numDollars];
-    }
-  }
-  
-  // Add dollars
-  result += ' dollars';
-  
-  // Add cents if any
-  if (parseInt(cents) > 0) {
-    result += ` and ${cents}/100`;
-  }
-  
-  return result.charAt(0).toUpperCase() + result.slice(1);
-} 
+}); 

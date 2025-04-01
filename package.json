@@ -11,7 +11,7 @@
 	"dependencies": {
 		"@headlessui/react": "^1.7.18",
 		"@heroicons/react": "^2.1.1",
-		"@nextui-org/react": "^2.2.9",
+		"@heroui/react": "^2.0.23",
 		"@prisma/client": "^6.5.0",
 		"@types/node": "^20.11.19",
 		"@types/react": "^18.2.57",

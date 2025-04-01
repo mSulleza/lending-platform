@@ -1,16 +1,16 @@
 import { formatCurrency, formatDate } from "@/app/utils/formatters";
 import {
-  Button,
-  Chip,
-  Input,
-  Spinner,
-  Table,
-  TableBody,
-  TableCell,
-  TableColumn,
-  TableHeader,
-  TableRow,
-} from "@nextui-org/react";
+    Button,
+    Chip,
+    Input,
+    Spinner,
+    Table,
+    TableBody,
+    TableCell,
+    TableColumn,
+    TableHeader,
+    TableRow,
+} from "@heroui/react";
 import { useEffect, useState } from "react";
 
 interface Payment {

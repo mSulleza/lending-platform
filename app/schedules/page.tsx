@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@nextui-org/button";
-import { Card, CardBody, CardHeader } from "@nextui-org/card";
+import { Button } from "@heroui/button";
+import { Card, CardBody, CardHeader } from "@heroui/card";
 import { useEffect, useState } from "react";
 import AddScheduleForm from "./components/AddScheduleForm";
 import ScheduleList from "./components/ScheduleList";

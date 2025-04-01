@@ -2,20 +2,20 @@
 
 import { useCurrency } from "@/app/hooks/useCurrency";
 import { formatCurrency } from "@/app/utils/formatters";
-import { Button, ButtonGroup } from "@nextui-org/button";
-import { Card, CardBody, CardHeader } from "@nextui-org/card";
-import { Input, Select, SelectItem, Switch } from "@nextui-org/react";
-import { Slider } from "@nextui-org/slider";
-import { Spinner } from "@nextui-org/spinner";
+import { Button, ButtonGroup } from "@heroui/button";
+import { Card, CardBody, CardHeader } from "@heroui/card";
+import { Input, Select, SelectItem, Switch } from "@heroui/react";
+import { Slider } from "@heroui/slider";
+import { Spinner } from "@heroui/spinner";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableColumn,
-  TableHeader,
-  TableRow,
-} from "@nextui-org/table";
-import { Tooltip } from "@nextui-org/tooltip";
+    Table,
+    TableBody,
+    TableCell,
+    TableColumn,
+    TableHeader,
+    TableRow,
+} from "@heroui/table";
+import { Tooltip } from "@heroui/tooltip";
 import { useEffect, useRef, useState } from "react";
 
 interface CashFlowProjection {
@@ -759,7 +759,7 @@ export default function LoanAdviser() {
                   onChange={(e) => setPaymentScheme(e.target.value)}
                 >
                   {paymentSchemes.map((scheme) => (
-                    <SelectItem key={scheme.value} value={scheme.value}>
+                    <SelectItem key={scheme.value}>
                       {scheme.label}
                     </SelectItem>
                   ))}
@@ -856,7 +856,7 @@ export default function LoanAdviser() {
                     }
                   >
                     {generateMonthOptions().map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
+                      <SelectItem key={option.value}>
                         {option.label}
                       </SelectItem>
                     ))}
@@ -1035,7 +1035,7 @@ export default function LoanAdviser() {
                           }
                         >
                           {generateMonthOptions().map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
+                            <SelectItem key={option.value}>
                               {option.label}
                             </SelectItem>
                           ))}
@@ -1055,15 +1055,9 @@ export default function LoanAdviser() {
                             })
                           }
                         >
-                          <SelectItem key="monthly" value="monthly">
-                            Monthly
-                          </SelectItem>
-                          <SelectItem key="quarterly" value="quarterly">
-                            Quarterly (every 3 months)
-                          </SelectItem>
-                          <SelectItem key="annually" value="annually">
-                            Annually (once a year)
-                          </SelectItem>
+                          <SelectItem key="monthly">Monthly</SelectItem>
+                          <SelectItem key="quarterly">Quarterly (every 3 months)</SelectItem>
+                          <SelectItem key="annually">Annually (once a year)</SelectItem>
                         </Select>
                       </div>
 

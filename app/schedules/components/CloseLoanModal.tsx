@@ -1,17 +1,17 @@
 "use client";
 
 import { formatCurrency } from "@/app/utils/formatters";
-import { Button } from "@nextui-org/button";
-import { Input, Textarea } from "@nextui-org/input";
+import { Button } from "@heroui/button";
+import { Input, Textarea } from "@heroui/input";
 import {
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from "@nextui-org/modal";
-import { Spinner, Tab, Tabs } from "@nextui-org/react";
-import { Select, SelectItem } from "@nextui-org/select";
+    Modal,
+    ModalBody,
+    ModalContent,
+    ModalFooter,
+    ModalHeader,
+} from "@heroui/modal";
+import { Spinner, Tab, Tabs } from "@heroui/react";
+import { Select, SelectItem } from "@heroui/select";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 interface CloseLoanModalProps {
@@ -449,7 +449,7 @@ export default function CloseLoanModal({
                         isRequired
                       >
                         {paymentSchemes.map((scheme) => (
-                          <SelectItem key={scheme.value} value={scheme.value}>
+                          <SelectItem key={scheme.value}>
                             {scheme.label}
                           </SelectItem>
                         ))}
