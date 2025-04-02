@@ -6,13 +6,13 @@ import path from "path";
 import PizZip from "pizzip";
 import Docxtemplater from "docxtemplater";
 import { PDFDocument } from "pdf-lib";
-import { spawn } from "child_process";
 import { promisify } from "util";
 import { mkdir } from "fs/promises";
 import { generateDocx } from "@/lib/docx";
 import { writeFile } from "fs/promises";
 import { join } from "path";
 import { tmpdir } from "os";
+import docxToPdf from "docx-pdf";
 
 // Directory for storing generated contracts
 const CONTRACTS_DIR = process.env.NODE_ENV === 'production' 
@@ -24,47 +24,14 @@ async function ensureContractsDir() {
   await fs.ensureDir(CONTRACTS_DIR);
 }
 
-// Helper function to check if LibreOffice is available
-async function isLibreOfficeAvailable(): Promise<boolean> {
-  // In production (AWS Lambda), LibreOffice is not available
-  if (process.env.NODE_ENV === 'production') {
-    return false;
-  }
-
-  return new Promise((resolve) => {
-    const process = spawn("which", ["libreoffice"]);
-    process.on("close", (code) => resolve(code === 0));
-  });
-}
-
-// Helper function to convert DOCX to PDF using LibreOffice
+// Helper function to convert DOCX to PDF using docx-pdf
 async function convertToPdf(docxPath: string, pdfPath: string): Promise<void> {
-  // In production, we'll skip PDF conversion since LibreOffice is not available
-  if (process.env.NODE_ENV === 'production') {
-    console.log('PDF conversion skipped in production environment');
-    return;
-  }
-
-  const hasLibreOffice = await isLibreOfficeAvailable();
-  if (!hasLibreOffice) {
-    throw new Error("LibreOffice is not available for PDF conversion");
-  }
-
   return new Promise((resolve, reject) => {
-    const process = spawn("libreoffice", [
-      "--headless",
-      "--convert-to",
-      "pdf",
-      "--outdir",
-      tmpdir(),
-      docxPath,
-    ]);
-
-    process.on("close", (code) => {
-      if (code === 0) {
-        resolve();
+    docxToPdf(docxPath, pdfPath, (err: Error | null) => {
+      if (err) {
+        reject(err);
       } else {
-        reject(new Error(`PDF conversion failed with code ${code}`));
+        resolve();
       }
     });
   });
@@ -147,12 +114,19 @@ export const POST = withAuth(async (request: NextRequest, { params }: { params: 
   try {
     const id = params.id;
     const body = await request.json();
-    const { contractType = "promissory" } = body; // Default to promissory note if not specified
+    const { contractType = "promissory", lenderName } = body; // Get lenderName from request body
     
     // Validate required fields
     if (!id) {
       return NextResponse.json(
         { error: "Loan schedule ID is required" },
+        { status: 400 }
+      );
+    }
+    
+    if (!lenderName) {
+      return NextResponse.json(
+        { error: "Lender name is required" },
         { status: 400 }
       );
     }
@@ -187,28 +161,29 @@ export const POST = withAuth(async (request: NextRequest, { params }: { params: 
     
     // Template data for the contract
     const templateData = {
+      releaseDate: formatDate(new Date()),
+      releaseYear: new Date().getFullYear().toString(),
       clientName: `${loanSchedule.client.firstName} ${loanSchedule.client.lastName}`,
       clientAddress: `${loanSchedule.client.address || ""}, ${loanSchedule.client.city || ""}, ${loanSchedule.client.state || ""} ${loanSchedule.client.zipCode || ""}`,
-      clientPhone: loanSchedule.client.phone || "",
-      clientEmail: loanSchedule.client.email,
-      loanAmount: loanSchedule.loanAmount.toFixed(2),
-      loanAmountInWords: numberToWords(loanSchedule.loanAmount),
-      interestRate: loanSchedule.monthlyInterest.toFixed(2),
-      termInMonths: loanSchedule.loanTerms,
-      startDate: formatDate(loanSchedule.startDate),
-      endDate: loanSchedule.payments.length > 0 
-        ? formatDate(loanSchedule.payments[loanSchedule.payments.length - 1].dueDate) 
-        : "",
-      monthlyPayment: loanSchedule.payments.length > 0 
+      grossLoanAmount: loanSchedule.loanAmount.toFixed(2),
+      grossLoanAmountInWords: numberToWords(loanSchedule.loanAmount),
+      grossLoanAmountWithCurrency: `Php ${loanSchedule.loanAmount.toFixed(2)}`,
+      loanTerms: loanSchedule.loanTerms.toString(),
+      monthlyInterest: loanSchedule.monthlyInterest.toFixed(2),
+      paymentScheme: "Monthly",
+      installmentAmount: loanSchedule.payments.length > 0 
         ? loanSchedule.payments[0].amount.toFixed(2) 
         : "0.00",
-      monthlyPaymentInWords: loanSchedule.payments.length > 0 
-        ? numberToWords(loanSchedule.payments[0].amount) 
-        : "zero",
-      totalPayment: (loanSchedule.payments.reduce((sum: number, payment: { amount: number }) => sum + payment.amount, 0)).toFixed(2),
-      totalPaymentInWords: numberToWords(loanSchedule.payments.reduce((sum: number, payment: { amount: number }) => sum + payment.amount, 0)),
-      totalInterest: (loanSchedule.payments.reduce((sum: number, payment: { amount: number }) => sum + payment.amount, 0) - loanSchedule.loanAmount).toFixed(2),
-      totalInterestInWords: numberToWords(loanSchedule.payments.reduce((sum: number, payment: { amount: number }) => sum + payment.amount, 0) - loanSchedule.loanAmount)
+      firstDueDate: loanSchedule.payments.length > 0 
+        ? formatDate(loanSchedule.payments[0].dueDate)
+        : "",
+      firstPaymentDate: loanSchedule.payments.length > 0 
+        ? formatDate(loanSchedule.payments[0].dueDate)
+        : "",
+      lastPaymentDate: loanSchedule.payments.length > 0 
+        ? formatDate(loanSchedule.payments[loanSchedule.payments.length - 1].dueDate)
+        : "",
+      lenderName: lenderName // Use the lenderName from request body
     };
     
     // Determine which template to use

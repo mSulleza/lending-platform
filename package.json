@@ -17,6 +17,7 @@
 		"@types/react": "^18.2.57",
 		"@types/react-dom": "^18.2.19",
 		"clsx": "^2.1.0",
+		"docx-pdf": "^0.0.1",
 		"docxtemplater": "^3.61.0",
 		"framer-motion": "^11.0.3",
 		"fs-extra": "^11.3.0",

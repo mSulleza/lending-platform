@@ -3,6 +3,7 @@
 import { Button } from "@heroui/button";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@heroui/modal";
 import { Select, SelectItem } from "@heroui/select";
+import { useSession } from "next-auth/react";
 import { useState } from "react";
 
 interface GenerateContractButtonProps {
@@ -16,6 +17,7 @@ export default function GenerateContractButton({
   hasContract,
   onSuccess,
 }: GenerateContractButtonProps) {
+  const { data: session } = useSession();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [contractType, setContractType] = useState("promissory");
@@ -42,6 +44,11 @@ export default function GenerateContractButton({
   };
 
   const handleGenerateContract = async () => {
+    if (!session?.user?.name) {
+      setError("User session not found. Please log in again.");
+      return;
+    }
+
     setIsGenerating(true);
     setError("");
     setGeneratedDocxUrl("");
@@ -57,6 +64,7 @@ export default function GenerateContractButton({
         },
         body: JSON.stringify({
           contractType,
+          lenderName: session.user.name,
         }),
       });
 
