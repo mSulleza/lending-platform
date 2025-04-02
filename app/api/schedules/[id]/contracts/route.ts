@@ -26,6 +26,11 @@ async function ensureContractsDir() {
 
 // Helper function to check if LibreOffice is available
 async function isLibreOfficeAvailable(): Promise<boolean> {
+  // In production (AWS Lambda), LibreOffice is not available
+  if (process.env.NODE_ENV === 'production') {
+    return false;
+  }
+
   return new Promise((resolve) => {
     const process = spawn("which", ["libreoffice"]);
     process.on("close", (code) => resolve(code === 0));
@@ -34,6 +39,12 @@ async function isLibreOfficeAvailable(): Promise<boolean> {
 
 // Helper function to convert DOCX to PDF using LibreOffice
 async function convertToPdf(docxPath: string, pdfPath: string): Promise<void> {
+  // In production, we'll skip PDF conversion since LibreOffice is not available
+  if (process.env.NODE_ENV === 'production') {
+    console.log('PDF conversion skipped in production environment');
+    return;
+  }
+
   const hasLibreOffice = await isLibreOfficeAvailable();
   if (!hasLibreOffice) {
     throw new Error("LibreOffice is not available for PDF conversion");
