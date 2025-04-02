@@ -15,7 +15,9 @@ import { join } from "path";
 import { tmpdir } from "os";
 
 // Directory for storing generated contracts
-const CONTRACTS_DIR = path.join(process.cwd(), "public", "contracts");
+const CONTRACTS_DIR = process.env.NODE_ENV === 'production' 
+  ? path.join('/tmp', 'contracts')
+  : path.join(process.cwd(), 'public', 'contracts');
 
 // Ensure contracts directory exists
 async function ensureContractsDir() {
@@ -234,8 +236,14 @@ export const POST = withAuth(async (request: NextRequest, { params }: { params: 
     // Return the contract file paths
     return NextResponse.json({
       success: true,
-      docxPath: `/contracts/${contractFileName}.docx`,
-      pdfPath: pdfAvailable ? `/contracts/${contractFileName}.pdf` : "",
+      docxPath: process.env.NODE_ENV === 'production' 
+        ? `/api/contracts/${contractFileName}.docx`
+        : `/contracts/${contractFileName}.docx`,
+      pdfPath: pdfAvailable 
+        ? (process.env.NODE_ENV === 'production' 
+            ? `/api/contracts/${contractFileName}.pdf`
+            : `/contracts/${contractFileName}.pdf`)
+        : "",
       pdfAvailable
     });
   } catch (error) {

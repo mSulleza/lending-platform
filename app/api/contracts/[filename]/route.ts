@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { join } from "path";
-import { tmpdir } from "os";
 import { readFile } from "fs/promises";
 
 export async function GET(
@@ -9,7 +8,7 @@ export async function GET(
 ) {
   try {
     const { filename } = params;
-    const filePath = join(tmpdir(), filename);
+    const filePath = join('/tmp', 'contracts', filename);
 
     // Read the file
     const fileBuffer = await readFile(filePath);
