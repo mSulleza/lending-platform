@@ -3,9 +3,6 @@ import { prisma } from "@/lib/prisma";
 import { withAuth } from "@/app/utils/auth";
 import fs from "fs-extra";
 import path from "path";
-import PizZip from "pizzip";
-import Docxtemplater from "docxtemplater";
-import { PDFDocument } from "pdf-lib";
 import { promisify } from "util";
 import { mkdir } from "fs/promises";
 import { generateDocx } from "@/lib/docx";
@@ -161,22 +158,33 @@ export const POST = withAuth(async (request: NextRequest, { params }: { params: 
     
     // Template data for the contract
     const templateData = {
-      releaseDate: formatDate(new Date()),
-      releaseYear: new Date().getFullYear().toString(),
+      // Required fields from TemplateData interface
       clientName: `${loanSchedule.client.firstName} ${loanSchedule.client.lastName}`,
-      clientAddress: `${loanSchedule.client.address || ""}, ${loanSchedule.client.city || ""}, ${loanSchedule.client.state || ""} ${loanSchedule.client.zipCode || ""}`,
-      grossLoanAmount: loanSchedule.loanAmount.toFixed(2),
-      grossLoanAmountInWords: numberToWords(loanSchedule.loanAmount),
-      grossLoanAmountWithCurrency: `Php ${loanSchedule.loanAmount.toFixed(2)}`,
-      loanTerms: loanSchedule.loanTerms.toString(),
-      monthlyInterest: loanSchedule.monthlyInterest.toFixed(2),
-      paymentScheme: "Monthly",
-      installmentAmount: loanSchedule.payments.length > 0 
+      clientAddress: loanSchedule.client.address || "",
+      clientPhone: loanSchedule.client.phone || "",
+      clientEmail: loanSchedule.client.email || "",
+      loanAmount: loanSchedule.loanAmount.toFixed(2),
+      loanAmountInWords: numberToWords(loanSchedule.loanAmount),
+      interestRate: loanSchedule.monthlyInterest.toString() + "%",
+      termInMonths: loanSchedule.loanTerms,
+      startDate: formatDate(loanSchedule.startDate),
+      endDate: formatDate(new Date(loanSchedule.startDate.getTime() + loanSchedule.loanTerms * 30 * 24 * 60 * 60 * 1000)),
+      monthlyPayment: loanSchedule.payments.length > 0 
         ? loanSchedule.payments[0].amount.toFixed(2) 
         : "0.00",
-      firstDueDate: loanSchedule.payments.length > 0 
-        ? formatDate(loanSchedule.payments[0].dueDate)
-        : "",
+      monthlyPaymentInWords: loanSchedule.payments.length > 0 
+        ? numberToWords(loanSchedule.payments[0].amount)
+        : "zero",
+      totalPayment: (loanSchedule.loanAmount + (loanSchedule.loanAmount * loanSchedule.monthlyInterest * loanSchedule.loanTerms / 100)).toFixed(2),
+      totalPaymentInWords: numberToWords(loanSchedule.loanAmount + (loanSchedule.loanAmount * loanSchedule.monthlyInterest * loanSchedule.loanTerms / 100)),
+      totalInterest: (loanSchedule.loanAmount * loanSchedule.monthlyInterest * loanSchedule.loanTerms / 100).toFixed(2),
+      totalInterestInWords: numberToWords(loanSchedule.loanAmount * loanSchedule.monthlyInterest * loanSchedule.loanTerms / 100),
+      
+      // Additional custom fields for templates (can still be used in templates)
+      releaseDate: formatDate(new Date()),
+      releaseYear: new Date().getFullYear().toString(),
+      grossLoanAmountWithCurrency: `Php ${loanSchedule.loanAmount.toFixed(2)}`,
+      loanTerms: loanSchedule.loanTerms.toString() + " months",
       firstPaymentDate: loanSchedule.payments.length > 0 
         ? formatDate(loanSchedule.payments[0].dueDate)
         : "",
